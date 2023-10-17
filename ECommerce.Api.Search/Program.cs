@@ -11,7 +11,14 @@ builder.Services.AddScoped<IOrdersService, OrdersService>();
 
 builder.Services.AddHttpClient("OrdersService", config =>
 {
-    config.BaseAddress = new Uri(builder.Configuration.GetSection("Services.Orders")?.Value);
+    var url = builder.Configuration.GetSection("Services").GetSection("Orders")?.Value;
+    config.BaseAddress = new Uri(url);
+});
+
+builder.Services.AddHttpClient("ProductsService", config =>
+{
+    var url = builder.Configuration.GetSection("Services").GetSection("Products")?.Value;
+    config.BaseAddress = new Uri(url);
 });
 
 builder.Services.AddControllers();
