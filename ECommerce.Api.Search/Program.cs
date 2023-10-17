@@ -1,6 +1,6 @@
 using ECommerce.Api.Search.Interfaces;
 using ECommerce.Api.Search.Services;
-using Microsoft.Extensions.DependencyInjection;
+using Polly;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IProductsService, ProductsService>();
+builder.Services.AddScoped<ICustomersService, CustomersService>();
 
 builder.Services.AddHttpClient("OrdersService", config =>
 {
@@ -19,6 +20,12 @@ builder.Services.AddHttpClient("OrdersService", config =>
 builder.Services.AddHttpClient("ProductsService", config =>
 {
     var url = builder.Configuration.GetSection("Services").GetSection("Products")?.Value;
+    config.BaseAddress = new Uri(url);
+}).AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(5, _ => TimeSpan.FromMilliseconds(500)));
+
+builder.Services.AddHttpClient("CustomersService", config =>
+{
+    var url = builder.Configuration.GetSection("Services").GetSection("Customers")?.Value;
     config.BaseAddress = new Uri(url);
 });
 
